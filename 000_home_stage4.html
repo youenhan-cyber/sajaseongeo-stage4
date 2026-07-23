@@ -566,17 +566,39 @@ function spawnConfetti(container){
   }, 4000);
 }
 
+function josaEul(word){
+  if(!word) return '';
+  const code = word.charCodeAt(word.length-1) - 0xAC00;
+  const hasJong = code >= 0 && code < 11172 && (code % 28) !== 0;
+  return word + (hasJong ? '을' : '를');
+}
+
 function checkNewUnlock(){
   const nu=sessionStorage.getItem('newUnlock');
   if(!nu)return;
   sessionStorage.removeItem('newUnlock');
-  const idx=parseInt(nu);
-  if(idx<stages.length){
-    document.getElementById('popupTitle').textContent=stages[idx].korean+' 진지 발견! 🎉';
-    document.getElementById('popupDesc').textContent=
-      `${stages[idx-1]?.korean}을(를) 정복했어요!\n\n이제 ${stages[idx].emoji} ${stages[idx].korean}에 도전할 수 있어요!`;
+
+  // 편 파일은 newUnlock에 항상 '1'만 저장하므로, 값 대신 실제 진행도로 계산한다
+  const prog = getProgress();
+  const doneCount = stages.filter(s => !!prog[s.id]).length;
+
+  // ① 이 단계를 전부 정복한 경우
+  if (doneCount >= stages.length){
+    document.getElementById('popupTitle').textContent = '모두 정복! 🏰';
+    document.getElementById('popupDesc').textContent =
+      `${josaEul(stages[stages.length-1].korean)} 끝으로\n${stages.length}개를 모두 정복했어요! 🎉`;
     document.getElementById('popup').classList.add('show');
+    return;
   }
+
+  // ② 다음 단계가 열린 경우
+  const idx = getUnlockedIdx();      // 다음에 도전할 단계
+  const cleared = stages[idx-1];     // 방금 깬 단계
+  if (idx <= 0 || !stages[idx] || !cleared) return;
+  document.getElementById('popupTitle').textContent = stages[idx].korean + ' 진지 발견! 🎉';
+  document.getElementById('popupDesc').textContent =
+    `${josaEul(cleared.korean)} 정복했어요!\n\n이제 ${stages[idx].emoji} ${stages[idx].korean}에 도전할 수 있어요!`;
+  document.getElementById('popup').classList.add('show');
 }
 function closePopup(){ document.getElementById('popup').classList.remove('show'); }
 
