@@ -685,12 +685,39 @@ function goComplete() {
 
   document.getElementById('scoreDisplay').textContent = score + '/5';
 
+
+  // 점수별 등급 (B안: 5/5 레전더리 · 3~4 다이아 · 그 이하 골드)
+  var tier;
+  if (score === 5)     tier = { key:'legendary', fw:'🏆', title:'복습 마스터 달성!', sub:'다섯 사자성어를 모두 정복했어요!', icon:'👑', name:'레전더리 카드', label:'💎 다이아몬드보다 한 단계 위!' };
+  else if (score >= 3) tier = { key:'diamond',   fw:'💎', title:'복습 완료!',       sub:'잘했어요! 조금만 더 하면 마스터예요.', icon:'💎', name:'다이아 카드',   label:'🏆 레전더리까지 한 걸음!' };
+  else                 tier = { key:'gold',      fw:'🥇', title:'복습 완료!',       sub:'끝까지 해냈어요! 다시 풀면 더 잘할 거예요.', icon:'🥇', name:'골드 카드',     label:'다시 도전하면 카드가 올라가요!' };
+
+  var _set = function(sel, val) { var el = document.querySelector(sel); if (el) el.textContent = val; };
+  _set('.legend-firework', tier.fw);
+  _set('.legend-title', tier.title);
+  _set('.legend-sub', tier.sub);
+  _set('.legend-card-icon', tier.icon);
+  _set('.legend-card-name', tier.name);
+  _set('.legend-card-label', tier.label);
+
   try {
-    localStorage.setItem('sajasungeo_legendary_count',
-      (parseInt(localStorage.getItem('sajasungeo_legendary_count') || '0') + 1).toString());
+    // 레전더리(5/5)일 때만 카운트 증가 — 반복 적립 차단
+    if (tier.key === 'legendary') {
+      const done = JSON.parse(localStorage.getItem('sajasungeo_legendaryDone') || '[]');
+      if (!done.includes('review_108')) {
+        done.push('review_108');
+        localStorage.setItem('sajasungeo_legendaryDone', JSON.stringify(done));
+        localStorage.setItem('sajasungeo_legendary_count',
+          (parseInt(localStorage.getItem('sajasungeo_legendary_count') || '0') + 1).toString());
+      }
+    }
     const prog = JSON.parse(localStorage.getItem('sajasungeo_progress') || '{}');
-    prog['review_108'] = { grade: 'legendary', date: new Date().toISOString() };
-    localStorage.setItem('sajasungeo_progress', JSON.stringify(prog));
+    const gradeOrder = { legendary:5, diamond:4, gold:3, silver:2, bronze:1 };
+    const prevGrade = prog['review_108']?.grade;
+    if (!prevGrade || (gradeOrder[tier.key] > gradeOrder[prevGrade])) {
+      prog['review_108'] = { grade: tier.key, date: new Date().toISOString() };
+      localStorage.setItem('sajasungeo_progress', JSON.stringify(prog));
+    }
   } catch(e) {}
 }
 

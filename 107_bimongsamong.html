@@ -1325,6 +1325,7 @@
     </div>
 
     <div class="p1-result" id="p1Result">🎉 암호 해독 성공!</div>
+    <div class="result-msg no" id="p1Miss">🤔 아직이에요. 글자 자리를 바꿔 볼까요?</div>
   </div>
 
   <button class="btn btn-primary" id="btn3" onclick="goPage(4)" disabled>사건을 해결하러 가기 →</button>
@@ -1588,8 +1589,8 @@
     <div class="grade-display">
       <div class="grade-gem" id="gradeGem">🕵️</div>
       <div class="grade-info">
-        <div class="grade-title" id="gradeTitle">명탐정</div>
-        <div class="grade-desc" id="gradeDesc">완벽해요! 하나도 안 틀렸어요!</div>
+        <div class="grade-title" id="gradeTitle">수사 완료!</div>
+        <div class="grade-desc" id="gradeDesc">결과를 확인하는 중이에요…</div>
       </div>
     </div>
     <div class="grade-bar-row">
@@ -1642,6 +1643,9 @@ let compDone = [false, false];
 let situationDone = false;
 let totalScore = 0;
 let earnedScore = 0;
+let p1Scored = false;
+let p1Missed = false;
+let extMissed = [false, false, false, false];
 let draggingTile = null;
 let wrongCount = 0; // 오답 누른 횟수
 
@@ -1689,17 +1693,17 @@ function goComplete() {
 
   // ── 오늘의 등급 계산 ──
   const grades = [
-    { key: 'diamond', gem: '🕵️', title: '명탐정!',     desc: '완벽해요! 하나도 안 틀렸어요!',        elemId: 'gi-diamond', wrong: 0 },
-    { key: 'gold',    gem: '📋', title: '수석 조사관!', desc: '아주 잘했어요! 1번 틀렸어요.',        elemId: 'gi-gold',    wrong: 1 },
-    { key: 'silver',  gem: '🔍', title: '단서 수집가!', desc: '잘했어요! 2번 틀렸어요.',             elemId: 'gi-silver',  wrong: 2 },
-    { key: 'bronze',  gem: '🔰', title: '견습 탐정',    desc: '3번 이상 틀렸어요. 다시 수사해봐요!',  elemId: 'gi-bronze',  wrong: 99 },
+    { key: 'diamond', gem: '🕵️', title: '명탐정!',     desc: '완벽에 가까워요! 아주 잘했어요!',        elemId: 'gi-diamond', wrong: 1 },
+    { key: 'gold',    gem: '📋', title: '수석 조사관!', desc: '아주 잘했어요! 조금만 더 하면 명탐정!',  elemId: 'gi-gold',    wrong: 3 },
+    { key: 'silver',  gem: '🔍', title: '단서 수집가!', desc: '잘했어요! 헷갈린 것만 다시 볼까요?',     elemId: 'gi-silver',  wrong: 5 },
+    { key: 'bronze',  gem: '🔰', title: '견습 탐정',    desc: '끝까지 해냈어요! 다시 수사해봐요!',      elemId: 'gi-bronze',  wrong: 99 },
   ];
 
   let grade;
-  if (wrongCount === 0)      grade = grades[0];
-  else if (wrongCount === 1) grade = grades[1];
-  else if (wrongCount === 2) grade = grades[2];
-  else                       grade = grades[3];
+  if (wrongCount <= 1)      grade = grades[0];
+  else if (wrongCount <= 3) grade = grades[1];
+  else if (wrongCount <= 5) grade = grades[2];
+  else                      grade = grades[3];
 
   setTimeout(() => {
     document.getElementById('gradeGem').textContent = grade.gem;
@@ -1719,7 +1723,7 @@ function goComplete() {
     const prevGrade = prog['bimongsamong']?.grade;
     // 더 좋은 등급이면 업데이트
     const gradeOrder = { diamond:4, gold:3, silver:2, bronze:1 };
-    const newGradeKey = wrongCount === 0 ? 'diamond' : wrongCount === 1 ? 'gold' : wrongCount === 2 ? 'silver' : 'bronze';
+    const newGradeKey = grade.key;
     if (!prevGrade || (gradeOrder[newGradeKey] > gradeOrder[prevGrade])) {
       prog['bimongsamong'] = { grade: newGradeKey, date: new Date().toISOString() };
       localStorage.setItem('sajasungeo_progress', JSON.stringify(prog));
@@ -1730,10 +1734,13 @@ function goComplete() {
 
   // ── 카드 누적 (localStorage) — 재도전 시 중복 적립 방지 ──
   let totalCards = 0;
-  const isRetrying = sessionStorage.getItem('retrying') === 'true';
   try {
     totalCards = parseInt(localStorage.getItem('hanjaCards') || '0');
-    if (!isRetrying) {
+    // 편마다 한 번만 적립 — 재도전이든 홈에서 다시 들어오든 중복되지 않음
+    const awarded = JSON.parse(localStorage.getItem('sajasungeo_cardAwarded') || '[]');
+    if (!awarded.includes('bimongsamong')) {
+      awarded.push('bimongsamong');
+      localStorage.setItem('sajasungeo_cardAwarded', JSON.stringify(awarded));
       totalCards += 4;
       localStorage.setItem('hanjaCards', totalCards);
     }
@@ -1902,12 +1909,19 @@ function emptySlot(slot) {
 function checkP1() {
   // 위치별 글자만 맞으면 정답 처리 (똑같이 생긴 타일이 두 개일 땐 어느 쪽을 넣어도 인정)
   const correct = slots.every((tileId, i) => tileId && document.getElementById(tileId).dataset.char === answer[i]);
+  const filled  = slots.every(t => t);
+  const miss    = document.getElementById('p1Miss');
   if (correct) {
     document.getElementById('p1Result').classList.add('show');
+    if (miss) miss.classList.remove('show');
     document.getElementById('btn3').disabled = false;
-    earnedScore += 10; totalScore += 10;
+    if (!p1Scored) { p1Scored = true; earnedScore += 10; totalScore += 10; }
   } else {
-    totalScore += 0;
+    document.getElementById('p1Result').classList.remove('show');
+    if (miss) {
+      if (filled) { miss.classList.add('show'); if (!p1Missed) { p1Missed = true; wrongCount++; } }
+      else        miss.classList.remove('show');
+    }
   }
 }
 
@@ -1926,6 +1940,7 @@ function pickChar(idx, el, correct) {
   } else {
     el.classList.add('selected-wrong');
     ci.classList.add('wrong');
+    wrongCount++;
   }
   totalScore += 5;
   charDone[idx] = true;
@@ -1951,7 +1966,7 @@ function pickGuess(idx, correct, hint) {
     document.getElementById('gu0').classList.add('correct');
     msg.textContent = '💡 ' + hint;
     msg.className = 'result-msg show no';
-    totalScore += 10;
+    totalScore += 10; wrongCount++;
   }
   document.getElementById('btn1').disabled = false;
 }
@@ -1989,7 +2004,7 @@ function pickComp(idx, el, correct) {
     opts.forEach(o => { if (o.onclick && o.onclick.toString().includes('true')) o.classList.add('selected-correct'); });
     fb.textContent = '💡 아쉬워요! 정답을 확인해보세요.';
     fb.className = 'feedback-msg show no';
-    totalScore += 10;
+    totalScore += 10; wrongCount++;
   }
   compCount++;
   if (compCount === 2) {
@@ -2017,7 +2032,7 @@ function pickBlank(idx, correct, hint) {
     slot.textContent = '비몽사몽';
     msg.textContent = '💡 ' + hint;
     msg.className = 'result-msg show no';
-    totalScore += 10;
+    totalScore += 10; wrongCount++;
   }
   setTimeout(() => { document.getElementById('situationCard').style.display = 'block'; }, 500);
 }
@@ -2069,7 +2084,7 @@ function pickSituation(idx) {
     } else {
       msg.textContent = '💡 ①번과 ③번이 비몽사몽에 어울리는 상황이에요!';
       msg.className = 'result-msg show no';
-      totalScore += 10;
+      totalScore += 10; wrongCount++;
     }
     setTimeout(() => { document.getElementById('btn5').disabled = false; }, 500);
   }
@@ -2108,7 +2123,7 @@ function pickExt(secIdx, optIdx, isCorrect, hint) {
 
   // 오답은 완료 여부 상관없이 항상 클릭 가능
   if (!isCorrect) {
-    wrongCount++; // 오답 카운트
+    if (!extMissed[secIdx]) { extMissed[secIdx] = true; wrongCount++; } // 구역당 1회만
     el.classList.add('revealed-wrong');
     addFeedbackLine(secIdx, '❌ ' + hint, 'no');
     if (window.speechSynthesis) {
