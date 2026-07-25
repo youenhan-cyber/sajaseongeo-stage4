@@ -1318,10 +1318,10 @@
     </div>
 
     <div class="tiles" id="tilesArea">
-      <div class="tile" draggable="true" data-char="상" data-idx="2" id="tile2">상<span class="syl-tile-sub">相</span></div>
-      <div class="tile" draggable="true" data-char="부" data-idx="1" id="tile1">부<span class="syl-tile-sub">扶</span></div>
-      <div class="tile" draggable="true" data-char="상" data-idx="0" id="tile0">상<span class="syl-tile-sub">相</span></div>
       <div class="tile" draggable="true" data-char="조" data-idx="3" id="tile3">조<span class="syl-tile-sub">助</span></div>
+      <div class="tile" draggable="true" data-char="상" data-idx="0" id="tile0">상<span class="syl-tile-sub">相</span></div>
+      <div class="tile" draggable="true" data-char="부" data-idx="1" id="tile1">부<span class="syl-tile-sub">扶</span></div>
+      <div class="tile" draggable="true" data-char="상" data-idx="2" id="tile2">상<span class="syl-tile-sub">相</span></div>
     </div>
 
     <div class="p1-result" id="p1Result">🎉 암호 해독 성공!</div>
@@ -1363,17 +1363,17 @@
         <div class="comp-q"><span class="comp-num">1</span>탐이와 험이는 어떻게 일을 나누어 맡았나요?</div>
         <div class="comp-options">
           <div class="comp-option" onclick="pickComp(0, this, true)">키 큰 탐이는 높은 곳을, 꼼꼼한 험이는 정리를 맡았다</div>
-          <div class="comp-option" onclick="pickComp(0, this, false)">둘 다 똑같은 일을 따로 했다</div>
-          <div class="comp-option" onclick="pickComp(0, this, false)">한 명이 다 하고 한 명은 쉬었다</div>
+          <div class="comp-option" onclick="pickComp(0, this, false)">둘 다 높은 곳만 맡는 바람에 아래쪽 책은 그대로 두었다</div>
+          <div class="comp-option" onclick="pickComp(0, this, false)">키 큰 탐이가 도서관 정리를 혼자 다 하고 험이는 구경했다</div>
         </div>
         <div class="feedback-msg" id="fb0"></div>
       </div>
       <div class="comp-item">
         <div class="comp-q"><span class="comp-num">2</span>서로 도운 결과는 어땠나요?</div>
         <div class="comp-options">
-          <div class="comp-option" onclick="pickComp(1, this, false)">시간이 더 오래 걸렸다</div>
+          <div class="comp-option" onclick="pickComp(1, this, false)">서로 방해가 되어 시간이 더 오래 걸렸다</div>
+          <div class="comp-option" onclick="pickComp(1, this, false)">둘 다 지쳐서 정리를 도중에 포기했다</div>
           <div class="comp-option" onclick="pickComp(1, this, true)">정리를 빠르게 끝내고 하이파이브를 했다</div>
-          <div class="comp-option" onclick="pickComp(1, this, false)">둘 다 지쳐 포기했다</div>
         </div>
         <div class="feedback-msg" id="fb1"></div>
       </div>

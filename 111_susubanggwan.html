@@ -1363,17 +1363,17 @@
         <div class="comp-q"><span class="comp-num">1</span>험이가 힘들어할 때 탐이는 무엇을 했나요?</div>
         <div class="comp-options">
           <div class="comp-option" onclick="pickComp(0, this, false)">함께 상자를 들어 주었다</div>
-          <div class="comp-option" onclick="pickComp(0, this, true)">팔짱을 낀 채 구경만 했다</div>
           <div class="comp-option" onclick="pickComp(0, this, false)">다른 친구를 불러왔다</div>
+          <div class="comp-option" onclick="pickComp(0, this, true)">팔짱을 낀 채 구경만 했다</div>
         </div>
         <div class="feedback-msg" id="fb0"></div>
       </div>
       <div class="comp-item">
         <div class="comp-q"><span class="comp-num">2</span>결국 어떤 일이 벌어졌나요?</div>
         <div class="comp-options">
-          <div class="comp-option" onclick="pickComp(1, this, false)">탐이가 상자를 대신 다 옮겼다</div>
-          <div class="comp-option" onclick="pickComp(1, this, true)">험이가 상자를 떨어뜨렸고, 탐이는 뒤늦게 도왔다</div>
-          <div class="comp-option" onclick="pickComp(1, this, false)">둘 다 그냥 가 버렸다</div>
+          <div class="comp-option" onclick="pickComp(1, this, false)">팔짱을 풀고 탐이가 처음부터 함께 옮겨 주었다</div>
+          <div class="comp-option" onclick="pickComp(1, this, true)">험이가 상자를 떨어뜨리고 탐이는 뒤늦게 도왔다</div>
+          <div class="comp-option" onclick="pickComp(1, this, false)">험이가 무거운 상자를 혼자 끝까지 다 옮겼다</div>
         </div>
         <div class="feedback-msg" id="fb1"></div>
       </div>
@@ -1504,10 +1504,10 @@
       </div>
       <div style="font-size:13px; color:var(--muted); margin-bottom:10px;">다음 중 手(수)가 <b>"손"</b> 뜻으로 쓰인 단어를 모두 고르세요.</div>
       <div class="ext-options">
-        <div class="ext-opt" id="eo1-0" onclick="pickExt(1,0,true,'박수의 뜻은 손뼉을 친다는 뜻으로, 수(手)는 여기서 손이라는 뜻이에요!')">박수</div>
-        <div class="ext-opt" id="eo1-1" onclick="pickExt(1,1,false,'수학의 수는 셈 수(數)예요. 수를 다루는 학문이라는 뜻이라 손 수(手)가 아니에요!')">수학</div>
-        <div class="ext-opt" id="eo1-2" onclick="pickExt(1,2,true,'가수의 뜻은 노래를 부르는 사람이라는 뜻으로, 수(手)는 여기서 재주 있는 사람·솜씨라는 뜻이에요! 손으로 하는 재주에서 왔지요.')">가수</div>
-        <div class="ext-opt" id="eo1-3" onclick="pickExt(1,3,false,'수요일의 수는 물 수(水)예요. 요일 이름이라 손 수(手)가 아니에요!')">수요일</div>
+        <div class="ext-opt" id="eo1-0" onclick="pickExt(1,0,false,'수학의 수는 셈 수(數)예요. 수를 다루는 학문이라는 뜻이라 손 수(手)가 아니에요!')">수학</div>
+        <div class="ext-opt" id="eo1-1" onclick="pickExt(1,1,true,'박수의 뜻은 손뼉을 친다는 뜻으로, 수(手)는 여기서 손이라는 뜻이에요!')">박수</div>
+        <div class="ext-opt" id="eo1-2" onclick="pickExt(1,2,false,'가수의 수도 손 수(手)지만 뜻이 달라요. 여기서는 노래하는 사람을 가리키는 말이에요. 손이라는 뜻은 박수·악수가 분명하답니다!')">가수</div>
+        <div class="ext-opt" id="eo1-3" onclick="pickExt(1,3,true,'악수의 뜻은 손을 마주 잡는다는 뜻으로, 수(手)는 여기서도 손이라는 뜻이에요!')">악수</div>
       </div>
       <div class="ext-feedback" id="ef1"></div>
     </div>
@@ -1581,7 +1581,7 @@
         <div class="hanja-card-char">手</div>
         <div class="hanja-card-info">
           <div class="hanja-card-sound">손 수 · 손</div>
-          <div class="hanja-card-words">박수 · 가수</div>
+          <div class="hanja-card-words">박수 · 악수</div>
         </div>
         <div class="card-new-badge">NEW</div>
       </div>
@@ -2117,7 +2117,7 @@ function pickSituation(idx) {
 // 각 섹션별 정답 인덱스
 const extCorrect = [
   [1],          // 袖: 수수방관 (초등 수준에선 이것뿐)
-  [0, 2],       // 手: 박수, 가수
+  [1, 3],       // 手: 박수, 악수
   [1, 2],       // 傍: 방관, 수수방관
   [0, 3]        // 觀: 관람, 관찰
 ];
