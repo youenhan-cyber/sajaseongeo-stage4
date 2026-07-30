@@ -327,6 +327,22 @@ header {
 </style>
 </head>
 <body>
+<script>function showStageClearPopup(){var p=document.getElementById('stageClearPopup');if(p)p.style.display='flex';}</script>
+<div id="stageClearPopup" style="display:none;position:fixed;inset:0;z-index:9999;background:rgba(0,0,0,0.72);align-items:center;justify-content:center;padding:24px;">
+  <div style="max-width:340px;width:100%;background:#fff;border-radius:20px;padding:28px 24px;text-align:center;box-shadow:0 12px 40px rgba(0,0,0,0.35);">
+    <div style="font-size:44px;margin-bottom:10px;">🎉</div>
+    <div style="font-size:19px;font-weight:900;color:#222;margin-bottom:8px;">
+      4단계 정복 완료!</div>
+    <div style="font-size:14px;line-height:1.7;color:#555;margin-bottom:16px;">
+      30편을 모두 해냈어요. 정말 대단해요!</div>
+    <div style="font-size:13.5px;line-height:1.7;color:#333;background:#F6F8FA;
+         border-radius:12px;padding:12px;margin-bottom:18px;">
+      다음은 <b>5단계 · 인산인해부터 일사불란까지</b><br>3편을 무료로 먼저 풀어보세요!</div>
+    <a href="https://youenhan-cyber.github.io/sajaseongeo-stage5-demo/" target="_blank" rel="noopener" style="display:block;padding:14px;border-radius:12px;text-decoration:none;background:linear-gradient(135deg,#F2BE4F,#E0A030);color:#3A2A10;font-size:15px;font-weight:900;margin-bottom:10px;">5단계 맛보기 →</a>
+    <button onclick="document.getElementById('stageClearPopup').style.display='none';"
+      style="width:100%;padding:12px;border:none;border-radius:12px;background:#EEE;color:#666;font-size:14px;font-weight:700;font-family:inherit;cursor:pointer;">여기서 마칠게요</button>
+  </div>
+</div>
 <div class="embers"></div>
 
 <!-- 완전 정복 축하 배너 (맨 위 = 30단계를 모두 마치고 도착했을 때만 보임) -->
@@ -584,10 +600,8 @@ function checkNewUnlock(){
 
   // ① 이 단계를 전부 정복한 경우
   if (doneCount >= stages.length){
-    document.getElementById('popupTitle').textContent = '모두 정복! 🏰';
-    document.getElementById('popupDesc').textContent =
-      `${josaEul(stages[stages.length-1].korean)} 끝으로\n${stages.length}개를 모두 정복했어요! 🎉`;
-    document.getElementById('popup').classList.add('show');
+    document.getElementById('popup').classList.remove('show');
+    showStageClearPopup();
     return;
   }
 
