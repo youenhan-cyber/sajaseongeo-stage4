@@ -362,9 +362,118 @@
     color: white;
     box-shadow: 0 4px 16px rgba(111,199,154,0.5);
   }
+
+  #utGate { position:fixed; inset:0; z-index:99999; background:#1E2A38;
+    display:flex; align-items:center; justify-content:center; padding:24px;
+    font-family:'Noto Sans KR',sans-serif; }
+  #utGate .g-box { max-width:340px; width:100%; background:#fff; border-radius:20px;
+    padding:32px 24px; text-align:center; box-shadow:0 14px 44px rgba(0,0,0,0.4); }
+  #utGate .g-title { font-size:20px; font-weight:900; color:#222; margin-bottom:8px; }
+  #utGate .g-desc { font-size:13.5px; line-height:1.7; color:#666; margin-bottom:20px; }
+  #utGate input { width:100%; box-sizing:border-box; padding:14px; font-size:17px;
+    text-align:center; letter-spacing:1px; border:2px solid #DDE3EA; border-radius:12px;
+    font-family:inherit; font-weight:700; text-transform:uppercase; }
+  #utGate input:focus { outline:none; border-color:#3D98D0; }
+  #utGate .g-btn { width:100%; margin-top:12px; padding:14px; border:none; border-radius:12px;
+    background:linear-gradient(135deg,#F2BE4F,#E0A030); color:#3A2A10;
+    font-size:15px; font-weight:900; font-family:inherit; cursor:pointer; }
+  #utGate .g-btn:disabled { opacity:0.5; cursor:default; }
+  #utGate .g-err { min-height:20px; margin-top:10px; font-size:13px; font-weight:700; color:#E05555; }
+  #utGate .g-help { margin-top:16px; font-size:12px; line-height:1.6; color:#999; }
+  html.ut-locked body > *:not(#utGate) { visibility:hidden !important; }
 </style>
 </head>
 <body>
+<div id="utGate">
+  <div class="g-box">
+    <div style="font-size:42px;margin-bottom:10px;">🔑</div>
+    <div class="g-title">접속 코드를 입력해 주세요</div>
+    <div class="g-desc">구매하실 때 받으신 코드를 넣어 주세요.<br>한 번만 입력하면 계속 이용하실 수 있어요.</div>
+    <input id="utCode" type="text" placeholder="UT-XXXX-XXXX" autocomplete="off"
+           inputmode="latin" spellcheck="false">
+    <button class="g-btn" id="utBtn" onclick="utCheck()">들어가기</button>
+    <div class="g-err" id="utErr"></div>
+    <div class="g-help">코드를 잃어버리셨나요?<br>인스타그램 @urimal_tamheom 으로 문의해 주세요.</div>
+  </div>
+</div>
+<script>
+(function(){
+  var ST=4, SALT='urimal-tamheom-2026', SRC='codes.json';
+  var KEY='ut_access_s'+ST;
+  var LIST=null;                     // 현재 유효한 해시 목록
+  document.documentElement.classList.add('ut-locked');
+
+  function unlock(){
+    document.documentElement.classList.remove('ut-locked');
+    var g=document.getElementById('utGate');
+    if(g) g.remove();
+  }
+  function setErr(t){
+    var e=document.getElementById('utErr');
+    if(e) e.textContent=t||'';
+  }
+  function setBusy(b){
+    var btn=document.getElementById('utBtn');
+    if(btn){ btn.disabled=!!b; btn.textContent=b?'확인 중…':'들어가기'; }
+  }
+  // 캐시 무효화: 매 요청마다 다른 쿼리 + no-store
+  function loadList(){
+    var url=SRC+'?v='+Date.now()+'-'+Math.random().toString(36).slice(2);
+    return fetch(url,{cache:'no-store'})
+      .then(function(r){ if(!r.ok) throw 0; return r.json(); })
+      .then(function(j){
+        var a=(j && j.codes) || null;
+        if(!Array.isArray(a)) throw 0;
+        LIST=a; return a;
+      });
+  }
+  async function sha(t){
+    var b=new TextEncoder().encode(t);
+    var d=await crypto.subtle.digest('SHA-256',b);
+    return Array.from(new Uint8Array(d)).map(function(x){
+      return x.toString(16).padStart(2,'0');}).join('');
+  }
+  window.utCheck=async function(){
+    var el=document.getElementById('utCode');
+    var code=(el.value||'').trim().toUpperCase().replace(/\s/g,'');
+    if(!code){ setErr('코드를 입력해 주세요.'); return; }
+    setBusy(true); setErr('');
+    try{
+      if(!LIST) await loadList();          // 목록을 못 읽으면 여기서 실패 → 차단 유지
+      var d=await sha(SALT+'|'+code);
+      if(LIST.indexOf(d)>=0){
+        try{ localStorage.setItem(KEY,d); }catch(e){}
+        unlock();
+      } else {
+        setErr('코드가 맞지 않아요. 다시 확인해 주세요.');
+        el.value=''; el.focus();
+      }
+    }catch(e){
+      setErr('지금은 확인할 수 없어요. 인터넷 연결을 확인하고 다시 눌러 주세요.');
+    }
+    setBusy(false);
+  };
+  function boot(){
+    var el=document.getElementById('utCode');
+    if(el){
+      el.addEventListener('keydown',function(ev){ if(ev.key==='Enter') utCheck(); });
+    }
+    var saved=null;
+    try{ saved=localStorage.getItem(KEY); }catch(e){}
+    // 저장돼 있어도 매번 현재 목록으로 재검사한다
+    loadList().then(function(a){
+      if(saved && a.indexOf(saved)>=0){ unlock(); return; }
+      if(saved){ try{ localStorage.removeItem(KEY); }catch(e){} }   // 차단된 코드 정리
+      setTimeout(function(){ try{ el.focus(); }catch(e){} },200);
+    }).catch(function(){
+      // 목록을 못 읽으면 절대 열지 않는다
+      setErr('코드 정보를 불러오지 못했어요. 새로고침해 주세요.');
+    });
+  }
+  if(document.readyState==='loading') document.addEventListener('DOMContentLoaded',boot);
+  else boot();
+})();
+</script>
 
 <header>
   <div class="label">🔍 미제 사건 파일 #02</div>
